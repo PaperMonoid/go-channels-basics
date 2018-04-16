@@ -1,0 +1,37 @@
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func generate(ints chan int, name string) {
+	for i := 1; i <= 10; i++ {
+		fmt.Printf("%v sending %v...\n", name, i)
+		ints <- i
+	}
+	close(ints)
+}
+
+func work(ints chan int, name string) {
+	for {
+		fmt.Printf("%v waiting for data... \n", name)
+		time.Sleep(1000 * time.Millisecond)
+		foo, more := <-ints
+		if !more {
+			fmt.Println("Done!")
+			return
+		}
+		fmt.Printf("%v recieved %v\n", name, foo)
+		fmt.Printf("%v processing %v...\n", name, foo)
+		time.Sleep(1000 * time.Millisecond)
+	}
+}
+
+func main() {
+	ints := make(chan int, 10)
+	go generate(ints, "A")
+	go work(ints, "B")
+	go work(ints, "C")
+	work(ints, "D")
+}
